@@ -2,7 +2,7 @@ import pkg_resources
 
 from .exceptions import ArrException, ConnectionFailure, Excluded, Exists, Invalid, NotFound, Unauthorized
 from .objs.simple import MetadataProfile, RemotePathMapping, RootFolder, UnmappedFolder, Season
-from .objs.reload import QualityProfile, LanguageProfile, SystemStatus, Tag, Movie, Series
+from .objs.reload import QualityProfile, SystemStatus, Tag, Movie, Series
 from .apis.sonarr import SonarrAPI
 from .apis.radarr import RadarrAPI
 from .apis.lidarr import LidarrAPI
@@ -24,7 +24,6 @@ __all__ = [
     "RadarrAPI",
     "SonarrAPI",
     "QualityProfile",
-    "LanguageProfile",
     "MetadataProfile",
     "RemotePathMapping",
     "RootFolder",
