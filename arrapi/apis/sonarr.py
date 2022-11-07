@@ -399,11 +399,3 @@ class SonarrAPI(BaseAPI):
                 self._raw.delete_series_editor(json)
         return invalid_ids
 
-    def language_profile(self) -> List[LanguageProfile]:
-        """ Gets every :class:`~arrapi.objs.reload.LanguageProfile` in Sonarr.
-
-            Returns:
-                List[:class:`~arrapi.objs.reload.LanguageProfile`]: List of all Language Profiles
-        """
-        return [LanguageProfile(self, data) for data in self._raw.get_languageProfile()]
-
