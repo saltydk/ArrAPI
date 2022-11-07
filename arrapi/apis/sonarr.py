@@ -1,6 +1,6 @@
 from requests import Session
 from typing import Optional, Union, List, Tuple
-from arrapi import LanguageProfile, RootFolder, QualityProfile, Series, Tag, NotFound, Invalid, Exists
+from arrapi import RootFolder, QualityProfile, Series, Tag, NotFound, Invalid, Exists
 from .base import BaseAPI
 from ..objs.simple import SonarrExclusion
 from ..raws.sonarr import SonarrRawAPI
@@ -21,14 +21,13 @@ class SonarrAPI(BaseAPI):
         self.monitor_options = ["all", "future", "missing", "existing", "pilot", "firstSeason", "latestSeason", "none"]
         self.series_type_options = ["standard", "daily", "anime"]
 
-    def _validate_add_options(self, root_folder, quality_profile, language_profile, monitor="all",
+    def _validate_add_options(self, root_folder, quality_profile, monitor="all",
                               season_folder=True, search=True, unmet_search=False, series_type="standard",
                               tags=None):
         """ Validate Add Series options. """
         options = {
             "root_folder": self._validate_root_folder(root_folder),
             "quality_profile" if self._raw.v3 else "profileId": self._validate_quality_profile(quality_profile),
-            "language_profile": self._validate_language_profile(language_profile),
             "monitor": self._validate_monitor(monitor),
             "monitored": monitor != "none",
             "season_folder": True if season_folder else False,
@@ -41,13 +40,13 @@ class SonarrAPI(BaseAPI):
         return options
 
     def _validate_edit_options(self, root_folder=None, path=None, move_files=False, quality_profile=None,
-                               language_profile=None, monitor=None, monitored=None, season_folder=None,
+                               monitor=None, monitored=None, season_folder=None,
                                series_type=None, tags=None, apply_tags="add"):
         """ Validate Edit Series options. """
-        variables = [root_folder, path, quality_profile, language_profile, monitor,
+        variables = [root_folder, path, quality_profile, monitor,
                      monitored, season_folder, series_type, tags]
         if all(v is None for v in variables):
-            raise ValueError("Expected either root_folder, path, quality_profile, language_profile, "
+            raise ValueError("Expected either root_folder, path, quality_profile, "
                              "monitor, monitored, season_folder, series_type, or tags args")
         options = {"moveFiles": True if move_files else False}
         if root_folder is not None:
@@ -56,8 +55,6 @@ class SonarrAPI(BaseAPI):
             options["path"] = path
         if quality_profile is not None:
             options["qualityProfileId" if self._raw.v3 else "profileId"] = self._validate_quality_profile(quality_profile)
-        if language_profile is not None:
-            options["languageProfileId"] = self._validate_language_profile(language_profile)
         if monitor is not None:
             options["monitor"] = self._validate_monitor(monitor)
         if monitored is not None:
@@ -147,7 +144,6 @@ class SonarrAPI(BaseAPI):
             self,
             root_folder: Union[str, int, "RootFolder"],
             quality_profile: Union[str, int, "QualityProfile"],
-            language_profile: Union[str, int, "LanguageProfile"],
             series_id: Optional[int] = None,
             tvdb_id: Optional[int] = None,
             monitor: str = "all",
@@ -162,7 +158,6 @@ class SonarrAPI(BaseAPI):
             Parameters:
                 root_folder (Union[str, int, RootFolder]): Root Folder for the Series.
                 quality_profile (Union[str, int, QualityProfile]): Quality Profile for the Series.
-                language_profile (Union[str, int, LanguageProfile]): Language Profile for the Series.
                 series_id (Optional[int]): Search by Sonarr Series ID.
                 tvdb_id (Optional[int]): Search by TVDb ID.
                 monitor (bool): How to monitor the Series. Valid options are all, future, missing, existing, pilot, firstSeason, latestSeason, or none.
@@ -182,7 +177,7 @@ class SonarrAPI(BaseAPI):
                 :class:`~arrapi.exceptions.Exists`: When the Series already Exists in Sonarr.
         """
         series = self.get_series(series_id=series_id, tvdb_id=tvdb_id)
-        series.add(root_folder, quality_profile, language_profile, monitor=monitor, season_folder=season_folder,
+        series.add(root_folder, quality_profile, monitor=monitor, season_folder=season_folder,
                    search=search, unmet_search=unmet_search, series_type=series_type, tags=tags)
         return series
 
@@ -193,7 +188,6 @@ class SonarrAPI(BaseAPI):
             path: Optional[str] = None,
             move_files: bool = False,
             quality_profile: Optional[Union[str, int, "QualityProfile"]] = None,
-            language_profile: Optional[Union[str, int, "LanguageProfile"]] = None,
             monitor: Optional[str] = None,
             monitored: Optional[bool] = None,
             season_folder: Optional[bool] = None,
@@ -209,7 +203,6 @@ class SonarrAPI(BaseAPI):
                 path (Optional[str]): Path to change the Series to.
                 move_files (bool): When changing the path do you want to move the files to the new path.
                 quality_profile (Optional[Union[str, int, QualityProfile]]): Quality Profile to change the Series to.
-                language_profile (Optional[Union[str, int, LanguageProfile]]): Language Profile to change the Series to.
                 monitor (Optional[str]): How you want the Series monitored. Valid options are all, future, missing, existing, pilot, firstSeason, latestSeason, or none.
                 monitored (Optional[bool]): Monitor the Series.
                 season_folder (Optional[bool]): Use Season Folders for the Series.
@@ -227,7 +220,7 @@ class SonarrAPI(BaseAPI):
         """
         series = self.get_series(series_id=series_id, tvdb_id=tvdb_id)
         series.edit(path=path, move_files=move_files, quality_profile=quality_profile,
-                    language_profile=language_profile, monitor=monitor, monitored=monitored,
+                    monitor=monitor, monitored=monitored,
                     season_folder=season_folder, series_type=series_type, tags=tags, apply_tags=apply_tags)
         return series
 
@@ -260,7 +253,6 @@ class SonarrAPI(BaseAPI):
     def add_multiple_series(self, ids: List[Union[Series, int, Tuple[Union[Series, int], str]]],
                             root_folder: Union[str, int, RootFolder],
                             quality_profile: Union[str, int, QualityProfile],
-                            language_profile: Union[str, int, LanguageProfile],
                             monitor: str = "all",
                             season_folder: bool = True,
                             search: bool = True,
@@ -279,7 +271,6 @@ class SonarrAPI(BaseAPI):
                 ids (List[Union[Series, int, Tuple[Union[Series, int], str]]]): List of TVDB IDs or Series lookups to add.
                 root_folder (Union[str, int, RootFolder]): Root Folder for the Series.
                 quality_profile (Union[str, int, QualityProfile]): Quality Profile for the Series.
-                language_profile (Union[str, int, LanguageProfile]): Language Profile for the Series.
                 monitor (bool): How to monitor the Series. Valid options are ``all``, ``future``, ``missing``, ``existing``, ``pilot``, ``firstSeason``, ``latestSeason``, or ``none``.
                 season_folder (bool): Use Season Folders for the Series.
                 search (bool): Start search for missing episodes of the Series after adding.
@@ -294,7 +285,7 @@ class SonarrAPI(BaseAPI):
             Raises:
                 :class:`~arrapi.exceptions.Invalid`: When one of the options given is invalid.
         """
-        options = self._validate_add_options(root_folder, quality_profile, language_profile, monitor=monitor,
+        options = self._validate_add_options(root_folder, quality_profile, monitor=monitor,
                                              season_folder=season_folder, search=search, unmet_search=unmet_search,
                                              series_type=series_type, tags=tags)
         json = []
@@ -332,7 +323,6 @@ class SonarrAPI(BaseAPI):
                              root_folder: Optional[Union[str, int, RootFolder]] = None,
                              move_files: bool = False,
                              quality_profile: Optional[Union[str, int, QualityProfile]] = None,
-                             language_profile: Optional[Union[str, int, LanguageProfile]] = None,
                              monitor: Optional[str] = None,
                              monitored: Optional[bool] = None,
                              season_folder: Optional[bool] = None,
@@ -348,7 +338,6 @@ class SonarrAPI(BaseAPI):
                 root_folder (Union[str, int, RootFolder]): Root Folder to change the Series to.
                 move_files (bool): When changing the root folder do you want to move the files to the new path.
                 quality_profile (Optional[Union[str, int, QualityProfile]]): Quality Profile to change the Series to.
-                language_profile (Optional[Union[str, int, LanguageProfile]]): Language Profile to change the Series to.
                 monitor (Optional[str]): How you want the Series monitored. Valid options are all, future, missing, existing, pilot, firstSeason, latestSeason, or none.
                 monitored (Optional[bool]): Monitor the Series.
                 season_folder (Optional[bool]): Use Season Folders for the Series.
@@ -364,7 +353,7 @@ class SonarrAPI(BaseAPI):
                 :class:`~arrapi.exceptions.Invalid`: When one of the options given is invalid.
         """
         json = self._validate_edit_options(root_folder=root_folder, move_files=move_files,
-                                           quality_profile=quality_profile, language_profile=language_profile,
+                                           quality_profile=quality_profile,
                                            monitor=monitor, monitored=monitored, season_folder=season_folder,
                                            series_type=series_type, tags=tags, apply_tags=apply_tags)
         series_list = []
@@ -417,15 +406,4 @@ class SonarrAPI(BaseAPI):
                 List[:class:`~arrapi.objs.reload.LanguageProfile`]: List of all Language Profiles
         """
         return [LanguageProfile(self, data) for data in self._raw.get_languageProfile()]
-
-    def _validate_language_profile(self, language_profile):
-        """ Validate Quality Profile options. """
-        options = []
-        for profile in self.language_profile():
-            options.append(profile)
-            if (isinstance(language_profile, LanguageProfile) and profile.id == language_profile.id) \
-                    or (isinstance(language_profile, int) and profile.id == language_profile) \
-                    or (profile.name == language_profile):
-                return profile.id
-        raise Invalid(f"Invalid Language Profile: '{language_profile}' Options: {options}")
 
