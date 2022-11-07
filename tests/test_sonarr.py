@@ -13,7 +13,6 @@ class SonarrTests(unittest.TestCase):
     root = "/config"
     profile = "HD-1080p"
     profile2 = "HD - 720p/1080p"
-    language = "English"
 
     @classmethod
     def setUpClass(cls):
@@ -42,7 +41,7 @@ class SonarrTests(unittest.TestCase):
 
     def test_multiple_add_edit_delete(self):
         series_ids = [self.sonarr.get_series(tvdb_id=83268), 283468, 385376]
-        self.sonarr.add_multiple_series(series_ids, self.root, self.profile, self.language, tags=["firsttag"])
+        self.sonarr.add_multiple_series(series_ids, self.root, self.profile, tags=["firsttag"])
         test_series = self.get_test_series()
         tvdb_ids = [series.tvdbId for series in test_series]
         self.assertIn(83268, tvdb_ids)
@@ -66,9 +65,9 @@ class SonarrTests(unittest.TestCase):
         self.assertEqual(series.title, "Game of Thrones")
         self.assertEqual(series.tvdbId, 121361)
         self.assertIsNone(series.id)
-        series.add(self.root, self.profile, self.language, tags=["arrapi"])
+        series.add(self.root, self.profile, tags=["arrapi"])
         with self.assertRaises(Exists):
-            series.add(self.root, self.profile, self.language)
+            series.add(self.root, self.profile)
         self.assertIsNotNone(series.id)
         series = self.sonarr.get_series(series_id=series.id)
         self.assertGreater(len(series.tags), 0)
