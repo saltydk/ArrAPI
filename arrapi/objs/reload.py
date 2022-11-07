@@ -1,6 +1,5 @@
 from abc import abstractmethod
 from typing import Union, Optional, List, TYPE_CHECKING
-
 from arrapi import NotFound, Invalid, Exists, Excluded
 from arrapi.objs.base import BaseObj
 
@@ -44,23 +43,6 @@ class QualityProfile(ReloadObj):
     def _full_load(self):
         return self._raw.get_qualityProfileId(self.id)
 
-
-class LanguageProfile(ReloadObj):
-    """ Represents a single Language Profile.
-
-        Attributes:
-            id (int): ID of the Language Profile.
-            name (str): Name of the Language Profile.
-    """
-
-    def _load(self, data):
-        super()._load(data)
-        self.id = self._parse(attrs="id", value_type="int")
-        self.name = self._parse(attrs="name")
-        self._finish(self.name)
-
-    def _full_load(self):
-        return self._raw.get_languageProfileId(self.id)
 
 class SystemStatus(ReloadObj):
     """ Represents the System Status.
@@ -446,8 +428,6 @@ class Series(ReloadObj):
             images (List[:class:`~arrapi.objs.simple.Image`]): List of Images for the Series.
             year (int): Year of the Series.
             path (str): Path of the Series.
-            languageProfileId (int): Language Profile ID of the Series.
-            languageProfile (:class:`~arrapi.objs.reload.LanguageProfile`)): Language Profile of the Series.
             seasonFolder (bool): If the Series has Season Folders.
             monitored (bool): If the Series is monitored.
             useSceneNumbering (bool): If the Series uses Scene Numbering.
@@ -501,8 +481,6 @@ class Series(ReloadObj):
         self.images = self._parse(attrs="images", value_type="image", is_list=True)
         self.year = self._parse(attrs="year", value_type="int")
         self.path = self._parse(attrs="path")
-        self.languageProfileId = self._parse(attrs="languageProfileId", value_type="int")
-        self.languageProfile = self._parse(attrs="languageProfileId", value_type="intLanguageProfile")
         self.seasonFolder = self._parse(attrs="seasonFolder", value_type="bool")
         self.monitored = self._parse(attrs="monitored", value_type="bool")
         self.useSceneNumbering = self._parse(attrs="useSceneNumbering", value_type="bool")
@@ -574,7 +552,6 @@ class Series(ReloadObj):
             self._data["rootFolderPath"] = options["root_folder"]
         self._data["monitored"] = options["monitored"]
         self._data["qualityProfileId" if self._raw.v3 else "profileId"] = options["quality_profile"]
-        self._data["languageProfileId"] = options["language_profile"]
         self._data["seriesType"] = options["series_type"]
         self._data["seasonFolder"] = options["season_folder"]
         self._data["addOptions"] = {
@@ -589,7 +566,6 @@ class Series(ReloadObj):
     def add(self,
             root_folder: Union[str, int, "RootFolder"],
             quality_profile: Union[str, int, "QualityProfile"],
-            language_profile: Union[str, int, "LanguageProfile"],
             monitor: str = "all",
             season_folder: bool = True,
             search: bool = True,
@@ -601,7 +577,6 @@ class Series(ReloadObj):
             Parameters:
                 root_folder (Union[str, int, RootFolder]): Root Folder for the Series.
                 quality_profile (Union[str, int, QualityProfile]): Quality Profile for the Series.
-                language_profile (Union[str, int, LanguageProfile]): Language Profile for the Series.
                 monitor (bool): How to monitor the Series. Valid options are all, future, missing, existing, pilot, firstSeason, latestSeason, or none.
                 season_folder (bool): Use Season Folders for the Series.
                 search (bool): Start search for missing episodes of the Series after adding.
@@ -618,7 +593,6 @@ class Series(ReloadObj):
         self._load(self._raw.post_series(self._get_add_data(self._arr._validate_add_options(
             root_folder,
             quality_profile,
-            language_profile,
             monitor=monitor,
             season_folder=season_folder,
             search=search,
@@ -631,7 +605,6 @@ class Series(ReloadObj):
              path: Optional[str] = None,
              move_files: bool = False,
              quality_profile: Optional[Union[str, int, "QualityProfile"]] = None,
-             language_profile: Optional[Union[str, int, "LanguageProfile"]] = None,
              monitor: Optional[str] = None,
              monitored: Optional[bool] = None,
              season_folder: Optional[bool] = None,
@@ -645,7 +618,6 @@ class Series(ReloadObj):
                 path (Optional[str]): Path to change the Series to.
                 move_files (bool): When changing the path do you want to move the files to the new path.
                 quality_profile (Optional[Union[str, int, QualityProfile]]): Quality Profile to change the Series to.
-                language_profile (Optional[Union[str, int, LanguageProfile]]): Language Profile to change the Series to.
                 monitor (Optional[str]): How you want the Series monitored. Valid options are all, future, missing, existing, pilot, firstSeason, latestSeason, or none.
                 monitored (Optional[bool]): Monitor the Series.
                 season_folder (Optional[bool]): Use Season Folders for the Series.
@@ -661,7 +633,7 @@ class Series(ReloadObj):
         if not self.id:
             raise NotFound(f"{self.title} not found in Sonarr, it must be added before editing")
         options = self._arr._validate_edit_options(path=path, move_files=move_files, quality_profile=quality_profile,
-                                                   language_profile=language_profile, monitor=monitor,
+                                                   monitor=monitor,
                                                    monitored=monitored, season_folder=season_folder,
                                                    series_type=series_type, tags=tags, apply_tags=apply_tags)
         if "monitor" in options:
