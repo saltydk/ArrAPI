@@ -32,8 +32,8 @@ setup(
     project_urls={
         "Documentation": "https://arrapi.metamanager.wiki",
         "Funding": "https://github.com/sponsors/meisnate12",
-        "Source": "https://github.com/meisnate12/ArrAPI",
-        "Issues": "https://github.com/meisnate12/ArrAPI/issues",
+        "Source": "https://github.com/saltydk/ArrAPI",
+        "Issues": "https://github.com/saltydk/ArrAPI/issues",
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
