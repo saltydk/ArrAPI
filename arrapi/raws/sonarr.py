@@ -71,14 +71,6 @@ class SonarrRawAPI(BaseRawAPI):
         }
         return self.post_seasonPass(json)
 
-    def get_languageProfile(self):
-        """ GET /languageProfile """
-        return self._get("languageProfile")
-
-    def get_languageProfileId(self, languageProfileId):
-        """" GET /languageProfile/languageProfileId """
-        return self._get(f"languageProfile/{languageProfileId}")
-
     def get_importlistexclusion(self):
         """ GET /importlistexclusion """
         return self._get("importlistexclusion")
