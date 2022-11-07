@@ -123,8 +123,6 @@ class BaseObj(ABC):
             return arrapi.objs.reload.Tag(self._arr, {"id": value})
         elif value_type == "intQualityProfile":
             return arrapi.objs.reload.QualityProfile(self._arr, {"id": value})
-        elif value_type == "intLanguageProfile":
-            return arrapi.objs.reload.LanguageProfile(self._arr, {"id": value})
         elif value_type == "str":
             return str(value)
         else:
